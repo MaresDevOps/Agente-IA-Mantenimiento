@@ -123,3 +123,6 @@
     function handleEnter(e) {
         if (e.key === 'Enter') enviarMensaje();
     }
+    document.addEventListener('DOMContentLoaded', () => {
+    addMessage("Hola. Soy el agente Centinela. 🤖<br>¿En qué puedo ayudarte?", 'bot');
+});
