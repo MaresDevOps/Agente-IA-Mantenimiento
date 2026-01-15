@@ -1,17 +1,15 @@
   
     const N8N_URL = "https://maresdev.app.n8n.cloud/webhook/chat-mantenimiento"; 
 
-    async function enviarMensaje() {
+  async function enviarMensaje() {
         const input = document.getElementById('userInput');
         const text = input.value;
         if (!text) return;
-
 
         addMessage(text, 'user');
         input.value = '';
         input.focus();
 
-   
         const loadingId = addMessage("Analizando datos...", 'bot', true);
 
         try {
@@ -21,44 +19,64 @@
                 body: JSON.stringify({ message: text })
             });
 
-            const data = await response.json();
-            
+
+            const rawText = await response.text();
+            console.log("Respuesta cruda de n8n:", rawText);
+
+            if (!rawText) {
+                throw new Error("El servidor respondió vacío (Revisa que el flujo n8n esté ACTIVO).");
+            }
+
+        
+            let data;
+            try {
+                data = JSON.parse(rawText);
+            } catch (e) {
+                console.error("No es JSON válido:", rawText);
+                throw new Error("El servidor no devolvió un JSON válido.");
+            }
 
             removeMessage(loadingId);
 
-     
+       
             let reporte = {};
-        
-            let rawJson = typeof data === 'string' ? data : (data.output || JSON.stringify(data));
             
-            rawJson = rawJson.replace(/```json/g, "").replace(/```/g, "").trim();
-
-            try {
-                reporte = JSON.parse(rawJson);
-            } catch (e) {
-              
-                reporte = { mensaje: rawJson };
+    
+            if (data.output) {
+                let cleanJson = typeof data.output === 'string' 
+                    ? data.output.replace(/```json/g, "").replace(/```/g, "").trim()
+                    : JSON.stringify(data.output);
+                
+                try {
+                    reporte = JSON.parse(cleanJson);
+                } catch (e) {
+                    reporte = { mensaje: cleanJson }; 
+                }
+            } 
+           
+            else if (data.accion || data.mensaje) {
+                reporte = data;
+            }
+         
+            else {
+                reporte = { mensaje: typeof data === 'string' ? data : JSON.stringify(data) };
             }
 
- 
+
             if (reporte.accion === "GUARDAR_UNIDAD" || reporte.accion === "AGENDAR_CITA") {
-               
                 actualizarSemaforo({ color: 'VERDE', riesgo_total: 0, status: 'REGISTRO OK' });
                 addMessage("✅ " + reporte.mensaje, 'bot');
-            
             } else if (reporte.riesgo_total !== undefined) {
-            
                 actualizarSemaforo(reporte);
                 addMessage("🔧 " + reporte.mensaje, 'bot');
-            
             } else {
-          
                 addMessage(reporte.mensaje || "Respuesta recibida.", 'bot');
             }
 
         } catch (error) {
-            console.error(error);
-            document.getElementById(loadingId).innerText = "❌ Error de conexión con el servidor.";
+            console.error("Error en el fetch:", error);
+            removeMessage(loadingId); 
+            addMessage("❌ Error: " + error.message, 'bot');
         }
     }
 
