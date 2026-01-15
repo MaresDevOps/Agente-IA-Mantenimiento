@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centinela - Gestión de Flota Traxión</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="chat-box">
+        <div class="chat-header">
+            <h3>🚛 Centinela Traxión AI</h3>
+        </div>
+        <div class="history" id="chatHistory">
+            <div class="msg bot">Hola. Soy el sistema Centinela. <br>Puedo <b>diagnosticar fallas</b>, <b>registrar unidades</b> o <b>agendar mantenimiento</b>. <br>¿En qué te ayudo?</div>
+        </div>
+        <div class="controls">
+            <input type="text" id="userInput" placeholder="Ej: Registrar unidad T-100... ó Tengo falla de frenos..." onkeypress="handleEnter(event)">
+            <button onclick="enviarMensaje()">Enviar</button>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <h3>Estado de Unidad</h3>
+        <div class="semaforo-body">
+            <div class="light red" id="light-red"></div>
+            <div class="light yellow" id="light-yellow"></div>
+            <div class="light green active" id="light-green"></div> </div>
+        <div class="status-text" id="statusText">OPERATIVO</div>
+        <div class="risk-score" id="scoreDisplay">0 pts</div>
+    </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
